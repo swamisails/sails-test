@@ -29,14 +29,14 @@
                             @foreach ($postList as $key =>$post)
                             <tr>
                                 <td>{{$key+1}}</td>
-                                <td>Category</td>
+                                <td>{{$post->category->category}}</td>
                                 <td>{{$post->title}}</td>
-                                <td>Description</td>
-                                <td>Thumbnail</td>
+                                <td>{{Str::of($post->small_description)->substr(0, 30)}}..</td>
+                                <td><img src="{{url('images/'.$post->thumbnail)}}" alt="Post Thumbnail" width="80"></td>
                                 <td>{{date('d M, Y', strtotime($post->created_at))}}</td>
                                 <td>
                                     <a href=""><i class="fa fa-comment"></i></a>
-                                    <a href=""><i class="fa fa-edit"></i></a>
+                                    <a href="{{route('post.edit', $post->id)}}"><i class="fa fa-edit"></i></a>
                                     <a href=""><i class="fa fa-trash"></i></a>
                                 </td>
                             </tr>
