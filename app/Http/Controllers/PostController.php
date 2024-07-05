@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use App\Models\{Post, Category};
 use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
+use App\Jobs\NewPostJob;
 use Illuminate\Support\Str;
+use App\Events\PostPlaced;
 
 use Auth;
+use GuzzleHttp\Psr7\Request;
 
 class PostController extends Controller
 {
@@ -18,8 +21,15 @@ class PostController extends Controller
      */
     public function index()
     {
+        // JOB TESTING
+        $post = Post::first();
+        // dispatch(new NewPostJob($post));
+
+        // Trigger the event
+        event(new PostPlaced($post));
+
         $posts = Post::with('category')->orderBy("created_at", "desc")->paginate(10);
-        return view("post.index")->with(["postList" => $posts]);
+        return view("post.index")->with(["postList" => $posts, "current_page"=> $posts->currentPage()]);
     }
 
     /**
@@ -49,11 +59,16 @@ class PostController extends Controller
         $post->small_description = $request->small_description;
         $post->description = $request->description;
         if ($request->hasFile('thumbnail')) {
-            $fileName = auth()->id() . '_' . time() . '.' . $request->file->extension();
-            $request->file->move(public_path('images'), $fileName);
+            $file = $request->file('thumbnail');
+            $fileName = auth()->id() . '_' . time() . '.' . $file->getClientOriginalName();
+            $file->move(public_path('/images'), $fileName);
             $post->thumbnail = $fileName;
         }
+        else{
+            $post->thumbnail = null;
+        }
         if ($post->save()) {
+            dispatch(new NewPostJob($post));
             return redirect()->route('post.index')->with('success', 'Post created successfully');
         } else {
             return redirect()->back()->with('error', 'Something went wrong');
@@ -68,7 +83,8 @@ class PostController extends Controller
      */
     public function show(Post $post)
     {
-        echo 'post show';
+        // return view('')->with(['post'=> $post]);
+        return redirect('posts/' . $post->slug);
     }
 
     /**
@@ -127,6 +143,9 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
-        //
+        if ($post->id) {
+            $post->delete();
+            return redirect('post')->with('success', 'Successfully removed');
+        }
     }
 }

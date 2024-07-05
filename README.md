@@ -64,3 +64,8 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+
+R&D:
+
+Event listener: https://arjunamrutiya.medium.com/a-step-by-step-guide-to-laravel-events-and-listeners-with-examples-634d7a018fa0
